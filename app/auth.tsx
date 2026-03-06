@@ -10,7 +10,6 @@ export default function AuthRedirect() {
     const handle = async () => {
       const url = await Linking.getInitialURL();
       if (!url) return;
-      console.log("DEEPLINK RECEIVED:", url);
 
       const { queryParams } = Linking.parse(url);
       const token = queryParams?.token as string;

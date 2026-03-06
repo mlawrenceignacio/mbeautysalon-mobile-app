@@ -29,7 +29,7 @@ const SignupScreen = () => {
     if (!email || !password) {
       return Alert.alert(
         "Invalid Credentials",
-        "Please enter email and password."
+        "Please enter email and password.",
       );
     }
 
@@ -38,12 +38,12 @@ const SignupScreen = () => {
     if (!emailRegex.test(email.trim())) {
       return Alert.alert(
         "Invalid Email",
-        "Please enter a valid emaill address."
+        "Please enter a valid emaill address.",
       );
     } else if (password.length < 8) {
       return Alert.alert(
         "Invalid Password",
-        "Password shouldat be at least 8 characters."
+        "Password shouldat be at least 8 characters.",
       );
     }
 
@@ -65,87 +65,91 @@ const SignupScreen = () => {
   return (
     <SafeAreaView style={styles.authCont}>
       <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
       >
-        <Text
-          style={{
-            fontSize: 25,
-            textAlign: "center",
-            marginVertical: 30,
-            color: "#790808",
-          }}
-        >
-          Create an Account
-        </Text>
-
-        <View style={styles.inputCont}>
-          <Image
-            source={require("../assets/images/user.png")}
-            style={styles.inputIcon}
-          />
-          <TextInput
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={styles.inputField}
-            placeholderTextColor={"#616161ff"}
-          />
-        </View>
-
-        <View style={styles.inputCont}>
-          <Image
-            source={require("../assets/images/lock.png")}
-            style={styles.inputIcon}
-          />
-          <TextInput
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            autoCapitalize="none"
-            style={styles.inputField}
-            placeholderTextColor={"#616161ff"}
-            secureTextEntry={!showPassword}
-          />
-          <Pressable
-            onPress={() => setShowPassword((prev) => !prev)}
-            style={{ paddingRight: 50 }}
+        <View style={{ flex: 1, justifyContent: "center" }}>
+          <Text
+            style={{
+              fontSize: 25,
+              textAlign: "center",
+              marginVertical: 30,
+              color: "#790808",
+            }}
           >
-            <Ionicons
-              name={showPassword ? "eye-off" : "eye"}
-              size={18}
-              color={"#790808"}
-            />
-          </Pressable>
-        </View>
-
-        <View style={[{ backgroundColor: "#790808" }, styles.buttonCont]}>
-          <TouchableOpacity onPress={handleSignup} disabled={loading}>
-            <Text style={styles.buttonText}>Sign Up</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={[{ backgroundColor: "#FED3DD" }, styles.buttonCont]}>
-          <TouchableOpacity
-            style={styles.googleButton}
-            onPress={() => loginWithGoogle()}
-          >
-            <Image
-              source={require("../assets/images/google.png")}
-              style={{ width: 15, height: 15 }}
-            />
-            <Text style={styles.textButton}>Sign up with Google</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={{ marginTop: 24, alignItems: "center" }}>
-          <Text>
-            Already have an account?{" "}
-            <Link href="/login" style={{ color: "#2b6cb0" }}>
-              Log in
-            </Link>
+            Create an Account
           </Text>
+
+          <View style={styles.inputCont}>
+            <Image
+              source={require("../assets/images/user.png")}
+              style={styles.inputIcon}
+            />
+            <TextInput
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              style={styles.inputField}
+              placeholderTextColor={"#616161ff"}
+            />
+          </View>
+
+          <View style={styles.inputCont}>
+            <Image
+              source={require("../assets/images/lock.png")}
+              style={styles.inputIcon}
+            />
+            <TextInput
+              placeholder="Password"
+              value={password}
+              onChangeText={setPassword}
+              autoCapitalize="none"
+              style={styles.inputField}
+              placeholderTextColor={"#616161ff"}
+              secureTextEntry={!showPassword}
+            />
+            <Pressable
+              onPress={() => setShowPassword((prev) => !prev)}
+              style={{ paddingRight: 50 }}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={18}
+                color={"#790808"}
+              />
+            </Pressable>
+          </View>
+
+          <View style={[{ backgroundColor: "#790808" }, styles.buttonCont]}>
+            <TouchableOpacity onPress={handleSignup} disabled={loading}>
+              <Text style={styles.buttonText}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={[{ backgroundColor: "#FED3DD" }, styles.buttonCont]}>
+            <TouchableOpacity
+              style={styles.googleButton}
+              onPress={() => loginWithGoogle()}
+            >
+              <Image
+                source={require("../assets/images/google.png")}
+                style={{ width: 15, height: 15 }}
+              />
+              <Text style={styles.textButton}>Sign up with Google</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ marginTop: 24, alignItems: "center" }}>
+            <Text>
+              Already have an account?{" "}
+              <Link href="/login" style={{ color: "#2b6cb0" }}>
+                Log in
+              </Link>
+            </Text>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

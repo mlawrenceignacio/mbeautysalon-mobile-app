@@ -42,7 +42,7 @@ const LoginScreen = () => {
     if (password.length < 8) {
       Alert.alert(
         "Invalid Password",
-        "Password must be at least 8 characters."
+        "Password must be at least 8 characters.",
       );
 
       return;
@@ -66,78 +66,82 @@ const LoginScreen = () => {
   return (
     <SafeAreaView style={styles.authCont}>
       <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
       >
-        <Logo />
+        <View style={{ flex: 1, justifyContent: "center" }}>
+          <Logo />
 
-        <View style={styles.inputCont}>
-          <Image
-            source={require("../assets/images/user.png")}
-            style={styles.inputIcon}
-          />
-          <TextInput
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={styles.inputField}
-            placeholderTextColor={"#616161ff"}
-          />
-        </View>
-
-        <View style={styles.inputCont}>
-          <Image
-            source={require("../assets/images/lock.png")}
-            style={styles.inputIcon}
-          />
-          <TextInput
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            autoCapitalize="none"
-            style={styles.inputField}
-            placeholderTextColor={"#616161ff"}
-            secureTextEntry={!showPassword}
-          />
-          <Pressable
-            onPress={() => setShowPassword((prev) => !prev)}
-            style={{ paddingRight: 50 }}
-          >
-            <Ionicons
-              name={showPassword ? "eye-off" : "eye"}
-              size={18}
-              color={"#790808"}
-            />
-          </Pressable>
-        </View>
-
-        <View style={[{ backgroundColor: "#790808" }, styles.buttonCont]}>
-          <TouchableOpacity onPress={handleLogin} disabled={loading}>
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={[{ backgroundColor: "#FED3DD" }, styles.buttonCont]}>
-          <TouchableOpacity
-            style={styles.googleButton}
-            onPress={() => loginWithGoogle()}
-          >
+          <View style={styles.inputCont}>
             <Image
-              source={require("../assets/images/google.png")}
-              style={{ width: 15, height: 15 }}
+              source={require("../assets/images/user.png")}
+              style={styles.inputIcon}
             />
-            <Text style={styles.textButton}>Log in with Google</Text>
-          </TouchableOpacity>
-        </View>
+            <TextInput
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              style={styles.inputField}
+              placeholderTextColor={"#616161ff"}
+            />
+          </View>
 
-        <View style={{ marginTop: 24, alignItems: "center" }}>
-          <Text>
-            Don{"'"}t have an account?{" "}
-            <Link href={"/signup"} style={{ color: "#2b6cb0" }}>
-              Sign up.
-            </Link>
-          </Text>
+          <View style={styles.inputCont}>
+            <Image
+              source={require("../assets/images/lock.png")}
+              style={styles.inputIcon}
+            />
+            <TextInput
+              placeholder="Password"
+              value={password}
+              onChangeText={setPassword}
+              autoCapitalize="none"
+              style={styles.inputField}
+              placeholderTextColor={"#616161ff"}
+              secureTextEntry={!showPassword}
+            />
+            <Pressable
+              onPress={() => setShowPassword((prev) => !prev)}
+              style={{ paddingRight: 50 }}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={18}
+                color={"#790808"}
+              />
+            </Pressable>
+          </View>
+
+          <View style={[{ backgroundColor: "#790808" }, styles.buttonCont]}>
+            <TouchableOpacity onPress={handleLogin} disabled={loading}>
+              <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={[{ backgroundColor: "#FED3DD" }, styles.buttonCont]}>
+            <TouchableOpacity
+              style={styles.googleButton}
+              onPress={() => loginWithGoogle()}
+            >
+              <Image
+                source={require("../assets/images/google.png")}
+                style={{ width: 15, height: 15 }}
+              />
+              <Text style={styles.textButton}>Log in with Google</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ marginTop: 24, alignItems: "center" }}>
+            <Text>
+              Don{"'"}t have an account?{" "}
+              <Link href={"/signup"} style={{ color: "#2b6cb0" }}>
+                Sign up.
+              </Link>
+            </Text>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

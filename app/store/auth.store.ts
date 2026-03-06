@@ -14,6 +14,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   loading: false,
   error: null,
 
+  setUser: (user) => set({ user }),
+
   signup: async (data) => {
     set({ loading: true, error: null });
 
@@ -67,11 +69,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   hydrate: async () => {
-    console.log("HYDRATE START");
     set({ loading: true });
 
     const token = await getToken();
-    console.log("HYDRATE TOKEN:", token);
+
     if (!token) {
       set({ loading: false });
       return;
@@ -82,12 +83,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await api.get("/user");
 
-      console.log("HYDRATE USER:", res.data.user);
-
       set({ token, user: res.data.user, loading: false });
     } catch {
-      console.log("HYDRATE FAILED");
-
       await deleteToken();
       set({ token: null, user: null, loading: false });
     }

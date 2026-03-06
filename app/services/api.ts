@@ -4,8 +4,12 @@ import { useAuthStore } from "../store/auth.store";
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const API_KEY = process.env.EXPO_PUBLIC_API_KEY;
 
+if (!API_URL) {
+  throw new Error("Missing EXPO_PUBLIC_API_URL");
+}
+
 const api = axios.create({
-  baseURL: __DEV__ ? API_URL : "https://whenthebackendisdeployed.com",
+  baseURL: API_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
