@@ -127,7 +127,7 @@ const Dashboard = () => {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: "#fff" }}
-      contentContainerStyle={{ padding: 20, paddingTop: 55 }}
+      contentContainerStyle={{ padding: 20, paddingTop: 30 }}
       showsVerticalScrollIndicator={false}
     >
       <LinearGradient

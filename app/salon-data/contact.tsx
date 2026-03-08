@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Loading from "../components/Loading";
 import Popup from "../components/Popup";
 import {
@@ -39,10 +40,10 @@ type ContactMap = {
 };
 
 const ContactInfo = () => {
+  const insets = useSafeAreaInsets();
   const [contacts, setContacts] = useState<ContactMap>({});
   const [isLoading, setIsLoading] = useState(false);
   const [popup, setPopup] = useState<string | null>(null);
-
   const scrollRef = useRef<ScrollView | null>(null);
   const [showTopButton, setShowTopButton] = useState(false);
 
@@ -75,23 +76,24 @@ const ContactInfo = () => {
       });
 
       setContacts(mapped);
-      setIsLoading(false);
     } catch (err) {
-      console.error("Contacts load failed");
+      console.error("Contacts load failed", err);
+    } finally {
       setIsLoading(false);
     }
   }
 
   async function save(type: string) {
-    setIsLoading(true);
     const entry = contacts[type];
+
     if (!entry.value.trim()) {
-      return Alert.alert("Invalid Input", "Value cannot be empty.");
-    }
-    if (!adminId) {
-      setIsLoading(false);
+      Alert.alert("Invalid Input", "Value cannot be empty.");
       return;
     }
+
+    if (!adminId) return;
+
+    setIsLoading(true);
 
     try {
       if (entry._id) {
@@ -105,6 +107,7 @@ const ContactInfo = () => {
           activityName: `Updated the ${type} information.`,
           adminEmail,
         });
+
         setPopup("Contact updated successfully!");
       } else {
         await addContactInfo({
@@ -117,12 +120,15 @@ const ContactInfo = () => {
           activityName: `Added the ${type} information.`,
           adminEmail,
         });
+
         setPopup("Contact added successfully!");
       }
-      setIsLoading(false);
-      load();
-    } catch {
+
+      await load();
+    } catch (err) {
+      console.error("Error saving contact", err);
       Alert.alert("Error", "Error saving contact.");
+    } finally {
       setIsLoading(false);
     }
   }
@@ -137,22 +143,24 @@ const ContactInfo = () => {
         text: "Yes",
         style: "destructive",
         onPress: async () => {
+          if (!adminId) return;
+
           setIsLoading(true);
-          if (!adminId) {
+          try {
+            await deleteContactInfo(entry._id!);
+            await addAdminActivity(adminId, {
+              adminUsername,
+              activityName: `Cleared the ${type} information.`,
+              adminEmail,
+            });
+            setPopup("Contact cleared!");
+            await load();
+          } catch (err) {
+            console.error("Error clearing contact", err);
+            Alert.alert("Error", "Failed to clear contact.");
+          } finally {
             setIsLoading(false);
-            return;
           }
-          await deleteContactInfo(entry._id!);
-
-          await addAdminActivity(adminId, {
-            adminUsername,
-            activityName: `Cleared the ${type} information.`,
-            adminEmail,
-          });
-
-          setIsLoading(false);
-          setPopup("Contact cleared!");
-          load();
         },
       },
     ]);
@@ -161,23 +169,22 @@ const ContactInfo = () => {
   if (isLoading) return <Loading />;
 
   function scrollToTop() {
-    scrollRef.current?.scrollTo({
-      y: 0,
-      animated: true,
-    });
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
   }
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: "#fff" }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={30}
     >
       <View
         style={{
           backgroundColor: "white",
           paddingHorizontal: 20,
-          paddingVertical: 10,
+          position: "fixed",
+          top: 0,
+          right: 0,
+          zIndex: 999,
         }}
       >
         <View style={styles.headerCont}>
@@ -185,11 +192,7 @@ const ContactInfo = () => {
           <Text style={styles.headerText}>MANAGE CONTACT INFO</Text>
         </View>
 
-        <View
-          style={{
-            gap: 10,
-          }}
-        >
+        <View style={{ gap: 10 }}>
           <View
             style={[styles.cardNote, { paddingHorizontal: 5, width: "100%" }]}
           >
@@ -214,7 +217,7 @@ const ContactInfo = () => {
                 gap: 4,
               }}
             >
-              <Ionicons name="arrow-up" color={"white"} size={20} />
+              <Ionicons name="arrow-up" color="white" size={20} />
               <Text style={{ color: "white", fontWeight: "700" }}>TOP</Text>
             </TouchableOpacity>
           )}
@@ -225,113 +228,116 @@ const ContactInfo = () => {
         ref={scrollRef}
         onScroll={(event) => {
           const yOffset = event.nativeEvent.contentOffset.y;
-
           setShowTopButton(yOffset > 250);
         }}
-        style={{ flex: 1, backgroundColor: "#fff" }}
-        contentContainerStyle={{
-          padding: 20,
-          paddingBottom: 50,
-          paddingTop: 0,
-        }}
+        scrollEventThrottle={16}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        contentContainerStyle={{
+          paddingBottom: Math.max(insets.bottom + 24, 40),
+        }}
+        showsVerticalScrollIndicator={false}
       >
-        {CONTACT_TYPES.map(({ key, icon }) => (
-          <View
-            key={key}
-            style={{
-              marginTop: 24,
-              padding: 18,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: "#e0e0e0",
-              backgroundColor: "#fafafa",
-            }}
-          >
+        <View style={{ padding: 20, paddingTop: 0 }}>
+          {CONTACT_TYPES.map(({ key, icon }) => (
             <View
+              key={key}
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 14,
-                gap: 8,
-              }}
-            >
-              <Ionicons name={icon as any} size={20} color="#790808" />
-              <Text
-                style={{
-                  fontSize: 17,
-                  fontWeight: "700",
-                  textTransform: "capitalize",
-                }}
-              >
-                {key}
-              </Text>
-            </View>
-
-            <TextInput
-              value={contacts[key]?.value || ""}
-              onChangeText={(text) =>
-                setContacts((prev) => ({
-                  ...prev,
-                  [key]: { ...prev[key], value: text },
-                }))
-              }
-              placeholder={`Enter ${key}`}
-              placeholderTextColor="#888"
-              style={{
+                marginTop: 24,
+                padding: 18,
+                borderRadius: 16,
                 borderWidth: 1,
-                borderColor: "#ccc",
-                borderRadius: 14,
-                paddingVertical: 14,
-                paddingHorizontal: 12,
-                fontSize: 16,
-                textAlign: "center",
-                backgroundColor: "#fff",
-              }}
-            />
-
-            <View
-              style={{
-                marginTop: 20,
-                gap: 12,
-                alignItems: "center",
+                borderColor: "#e0e0e0",
+                backgroundColor: "#fafafa",
               }}
             >
-              <TouchableOpacity
-                onPress={() => save(key)}
+              <View
                 style={{
-                  backgroundColor: "#790808",
-                  paddingVertical: 12,
-                  paddingHorizontal: 40,
-                  borderRadius: 12,
-                  width: "80%",
+                  flexDirection: "row",
                   alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 14,
+                  gap: 8,
                 }}
               >
-                <Text style={{ color: "#fff", fontWeight: "700" }}>Save</Text>
-              </TouchableOpacity>
+                <Ionicons name={icon as any} size={20} color="#790808" />
+                <Text
+                  style={{
+                    fontSize: 17,
+                    fontWeight: "700",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {key}
+                </Text>
+              </View>
 
-              <TouchableOpacity
-                disabled={!contacts[key]?._id}
-                onPress={() => clear(key)}
+              <TextInput
+                value={contacts[key]?.value || ""}
+                onChangeText={(text) =>
+                  setContacts((prev) => ({
+                    ...prev,
+                    [key]: { ...prev[key], value: text },
+                  }))
+                }
+                placeholder={`Enter ${key}`}
+                placeholderTextColor="#888"
                 style={{
-                  backgroundColor: contacts[key]?._id ? "#d9534f" : "#aaa",
-                  paddingVertical: 12,
-                  paddingHorizontal: 40,
-                  borderRadius: 12,
-                  width: "80%",
+                  borderWidth: 1,
+                  borderColor: "#ccc",
+                  borderRadius: 14,
+                  paddingVertical: 14,
+                  paddingHorizontal: 12,
+                  fontSize: 16,
+                  textAlign: "center",
+                  backgroundColor: "#fff",
+                }}
+              />
+
+              <View
+                style={{
+                  marginTop: 20,
+                  gap: 12,
                   alignItems: "center",
                 }}
               >
-                <Text style={{ color: "#fff", fontWeight: "700" }}>Clear</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => save(key)}
+                  style={{
+                    backgroundColor: "#790808",
+                    paddingVertical: 12,
+                    paddingHorizontal: 40,
+                    borderRadius: 12,
+                    width: "80%",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "700" }}>Save</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  disabled={!contacts[key]?._id}
+                  onPress={() => clear(key)}
+                  style={{
+                    backgroundColor: contacts[key]?._id ? "#d9534f" : "#aaa",
+                    paddingVertical: 12,
+                    paddingHorizontal: 40,
+                    borderRadius: 12,
+                    width: "80%",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "700" }}>
+                    Clear
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        ))}
-
-        {popup && <Popup message={popup} onClose={() => setPopup(null)} />}
+          ))}
+        </View>
       </ScrollView>
+
+      {popup && <Popup message={popup} onClose={() => setPopup(null)} />}
     </KeyboardAvoidingView>
   );
 };

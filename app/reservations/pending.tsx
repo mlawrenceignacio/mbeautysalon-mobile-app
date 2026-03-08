@@ -22,7 +22,6 @@ const PendingReservations = () => {
   const [reasonModal, setReasonModal] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [popup, setPopup] = useState<string | null>(null);
-
   const scrollRef = useRef<ScrollView | null>(null);
   const [showTopButton, setShowTopButton] = useState(false);
 
@@ -30,6 +29,7 @@ const PendingReservations = () => {
   const adminId = user?._id;
   const adminUsername = user?.username;
   const adminEmail = user?.email;
+
   const [customerDetails, setCustomerDetails] = useState<{
     clientEmail: string;
     clientName: string;
@@ -41,31 +41,35 @@ const PendingReservations = () => {
 
   async function load() {
     setIsLoading(true);
-
     try {
       const result = await getReservations();
 
       if (!result?.reservations) {
+        setPending([]);
+        setIsLoading(false);
         return;
       }
 
-      const filteredReservations = result?.reservations?.filter(
+      const filteredReservations = result.reservations.filter(
         (r: any) => r.status === "Pending",
       );
 
       setPending(filteredReservations);
-      setIsLoading(false);
     } catch (err: any) {
-      console.error("Reservations load failed: ", err?.res?.status);
+      console.error("Reservations load failed:", {
+        message: err?.message,
+        status: err?.response?.status,
+        data: err?.response?.data,
+      });
+      setPending([]);
+    } finally {
       setIsLoading(false);
-      return;
     }
   }
 
   useFocusEffect(
     useCallback(() => {
       load();
-
       return () => {};
     }, []),
   );
@@ -95,11 +99,7 @@ const PendingReservations = () => {
           <Text style={styles.headerText}>PENDING REQUESTS</Text>
         </View>
 
-        <View
-          style={{
-            gap: 10,
-          }}
-        >
+        <View style={{ gap: 10 }}>
           <View
             style={[styles.cardNote, { paddingHorizontal: 5, width: "100%" }]}
           >
@@ -125,7 +125,7 @@ const PendingReservations = () => {
                 gap: 4,
               }}
             >
-              <Ionicons name="arrow-up" color={"white"} size={20} />
+              <Ionicons name="arrow-up" color="white" size={20} />
               <Text style={{ color: "white", fontWeight: "700" }}>TOP</Text>
             </TouchableOpacity>
           )}
@@ -136,13 +136,13 @@ const PendingReservations = () => {
         ref={scrollRef}
         onScroll={(event) => {
           const yOffset = event.nativeEvent.contentOffset.y;
-
           setShowTopButton(yOffset > 250);
         }}
         style={{ flex: 1, backgroundColor: "#fff" }}
         contentContainerStyle={{
           padding: 15,
           paddingTop: 0,
+          paddingBottom: 40,
         }}
       >
         <View style={{ marginTop: 12, gap: 10 }}>
@@ -153,7 +153,7 @@ const PendingReservations = () => {
             <Ionicons
               name="checkmark-done-circle"
               size={24}
-              color={"yellowgreen"}
+              color="yellowgreen"
             />
             <Text style={styles.primaryActionText}>
               View User Confirmed Reservations
@@ -164,39 +164,39 @@ const PendingReservations = () => {
         {pending.map((r: any) => (
           <View key={r._id} style={styles.reservationCard}>
             <View style={styles.cardRow}>
-              <Ionicons name="person-circle" size={22} color={"#790808"} />
+              <Ionicons name="person-circle" size={22} color="#790808" />
               <Text style={styles.cardName}>
                 {r?.clientName?.toUpperCase()}
               </Text>
             </View>
 
             <View style={styles.cardRow}>
-              <Ionicons name="mail-outline" size={22} color={"#790808"} />
+              <Ionicons name="mail-outline" size={22} color="#790808" />
               <Text style={styles.cardValue}>{r?.email}</Text>
             </View>
 
             <View style={styles.cardRow}>
-              <Ionicons name="call-outline" size={22} color={"#790808"} />
+              <Ionicons name="call-outline" size={22} color="#790808" />
               <Text style={styles.cardValue}>{r?.phone}</Text>
             </View>
 
             <View style={styles.cardRow}>
-              <Ionicons name="briefcase-outline" size={20} color={"#790808"} />
+              <Ionicons name="briefcase-outline" size={20} color="#790808" />
               <Text style={styles.cardValue}>{r.service?.toUpperCase()}</Text>
             </View>
 
             <View style={styles.cardRow}>
-              <Ionicons name="time-outline" size={20} color={"#790808"} />
+              <Ionicons name="time-outline" size={20} color="#790808" />
               <Text style={styles.cardValue}>{r?.time}</Text>
             </View>
 
             <View style={styles.cardRow}>
-              <Ionicons name="calendar-outline" size={20} color={"#790808"} />
+              <Ionicons name="calendar-outline" size={20} color="#790808" />
               <Text style={styles.cardValue}>{formatDate(r?.date)}</Text>
             </View>
 
             <View style={styles.cardRow}>
-              <Ionicons name="settings-outline" size={20} color={"#790808"} />
+              <Ionicons name="settings-outline" size={20} color="#790808" />
               <Text style={styles.cardValue}>
                 Placed on: {formatDate(r.createdAt)} at{" "}
                 {formatTime(r.createdAt)}
@@ -217,7 +217,7 @@ const PendingReservations = () => {
                 marginBottom: 10,
               }}
             >
-              <Ionicons name="ellipse" size={12} color={"#d4a017"} />
+              <Ionicons name="ellipse" size={12} color="#d4a017" />
               <Text style={styles.cardStatusText}>PENDING</Text>
             </View>
 
@@ -241,7 +241,7 @@ const PendingReservations = () => {
                 <TouchableOpacity
                   style={{
                     backgroundColor:
-                      r.status === "Pending" ? "#00096aff" : "#aaa",
+                      r.status === "Pending" ? "#00096a" : "#aaa",
                     paddingVertical: 6,
                     paddingHorizontal: 10,
                     borderRadius: 10,
@@ -256,21 +256,34 @@ const PendingReservations = () => {
                         return;
                       }
 
-                      await sendReservationConfirmation(r._id);
+                      const res = await sendReservationConfirmation(r._id);
 
                       await addAdminActivity(adminId, {
                         adminUsername,
-                        activityName: `Sent a reservation email confirmation to ${
-                          r.clientName
-                        } (${r.email}) scheduled on ${formatDate(r.date)} at ${r.time}.`,
+                        activityName: `Sent a reservation email confirmation to ${r.clientName} (${r.email}) scheduled on ${formatDate(r.date)} at ${r.time}.`,
                         adminEmail,
                       });
 
-                      setPopup("Confirmation sent!");
+                      setPopup(res?.message || "Confirmation sent!");
                       await load();
-                    } catch (err) {
-                      console.error("Send confirmation failed:", err);
-                      setPopup("Failed to send confirmation.");
+                    } catch (err: any) {
+                      console.error(
+                        "Send confirmation failed in pending.tsx:",
+                        {
+                          message: err?.message,
+                          status: err?.response?.status,
+                          data: err?.response?.data,
+                          fullError: err,
+                        },
+                      );
+
+                      const backendMessage =
+                        err?.response?.data?.message ||
+                        err?.response?.data?.error ||
+                        err?.message ||
+                        "Failed to send confirmation.";
+
+                      setPopup(backendMessage);
                     } finally {
                       setIsLoading(false);
                     }
@@ -322,7 +335,7 @@ const PendingReservations = () => {
                 <Ionicons
                   name="document-text-outline"
                   size={18}
-                  color={"#790808"}
+                  color="#790808"
                 />
                 <Text style={styles.cardNoteText}>{r?.extraNote}</Text>
               </View>
@@ -339,6 +352,7 @@ const PendingReservations = () => {
           }}
           onSubmit={async (reason) => {
             setIsLoading(true);
+
             if (!selectedId || !adminId) {
               setIsLoading(false);
               return;
@@ -353,27 +367,28 @@ const PendingReservations = () => {
 
               await addAdminActivity(adminId, {
                 adminUsername,
-                activityName: `Declined the reservation of ${
-                  customerDetails?.clientName
-                } (${customerDetails?.clientEmail}) scheduled on ${formatDate(
-                  customerDetails!.schedule.date,
-                )} at ${customerDetails!.schedule.time}.`,
+                activityName: `Declined the reservation of ${customerDetails?.clientName} (${customerDetails?.clientEmail}) scheduled on ${formatDate(customerDetails!.schedule.date)} at ${customerDetails!.schedule.time}.`,
                 adminEmail,
               });
 
-              setIsLoading(false);
               setPopup("Reservation declined.");
-              load();
-            } catch (err) {
-              console.error(err);
-              setIsLoading(false);
-              setPopup("Failed to decline reservation.");
+              await load();
+            } catch (err: any) {
+              console.error("Decline failed:", {
+                message: err?.message,
+                status: err?.response?.status,
+                data: err?.response?.data,
+              });
+
+              setPopup(
+                err?.response?.data?.message ||
+                  "Failed to decline reservation.",
+              );
             } finally {
+              setIsLoading(false);
               setReasonModal(false);
               setSelectedId(null);
             }
-
-            load();
           }}
         />
 

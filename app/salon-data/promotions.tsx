@@ -4,13 +4,16 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   addAdminActivity,
   addPromotion,
@@ -38,6 +41,7 @@ const Promotions = () => {
   const [showModal, setShowModal] = useState(false);
   const [showTopButton, setShowTopButton] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const scrollRef = useRef<ScrollView | null>(null);
   const categories = ["All", ...new Set(promotions.map((s) => s.category))];
@@ -394,148 +398,174 @@ const Promotions = () => {
           </View>
         ))}
 
-        <Modal visible={showModal} transparent animationType="slide">
-          <View
+        <Modal
+          visible={showModal}
+          transparent
+          animationType="slide"
+          statusBarTranslucent
+          onRequestClose={() => setShowModal(false)}
+        >
+          <KeyboardAvoidingView
             style={{
               flex: 1,
-              backgroundColor: "#00000088",
-              justifyContent: "center",
-              padding: 25,
+              backgroundColor: "rgba(0,0,0,0.45)",
             }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 4 : 0}
           >
             <View
               style={{
-                backgroundColor: "white",
-                padding: 20,
-                borderRadius: 10,
+                flex: 1,
+                justifyContent: "center",
+                paddingHorizontal: 8,
+                paddingTop: 8,
+                paddingBottom: Math.max(insets.bottom, 8),
               }}
             >
-              <Text
-                style={{
-                  fontSize: 20,
-                  fontWeight: "700",
-                  marginBottom: 15,
-                  color: "#790808",
-                }}
-              >
-                {editId ? "Edit Promotion" : "Add Promotion"}
-              </Text>
-
-              <TextInput
-                placeholder="Category * (e.g., Hair)"
-                value={category}
-                onChangeText={setCategory}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  borderRadius: 8,
-                  padding: 10,
-                  marginBottom: 12,
-                }}
-                placeholderTextColor={"#616161ff"}
-              />
-
-              <TextInput
-                placeholder="Promotion Name * (e.g., 25% February Off)"
-                value={promotionName}
-                onChangeText={setPromotionName}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  borderRadius: 8,
-                  padding: 10,
-                  marginBottom: 12,
-                }}
-                placeholderTextColor={"#616161ff"}
-              />
-
-              <TextInput
-                placeholder="Description * (e.g., Valentine's Celebration promo for couples this upcoming February 11 to February 14, 2026! )"
-                value={description}
-                onChangeText={setDescription}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  borderRadius: 8,
-                  padding: 10,
-                  marginBottom: 12,
-                  maxHeight: 150,
-                }}
-                multiline
-                placeholderTextColor={"#616161ff"}
-              />
-
-              <TouchableOpacity
-                style={styles.inputCont}
-                onPress={() => setShowDatePicker(true)}
-              >
-                <Text
-                  style={[
-                    styles.inputField,
-                    { color: expiration ? "#000" : "#999" },
-                  ]}
-                >
-                  {!expiration ? "Select Expiration *" : formatDate(expiration)}
-                </Text>
-              </TouchableOpacity>
-
-              {showDatePicker && (
-                <DateTimePicker
-                  value={expiration ? new Date(expiration) : new Date()}
-                  mode="date"
-                  display="default"
-                  minimumDate={new Date()}
-                  onChange={onDateChange}
-                />
-              )}
-
               <View
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "flex-end",
-                  gap: 12,
-                  marginTop: 10,
+                  backgroundColor: "#fff",
+                  borderRadius: 16,
+                  overflow: "hidden",
                 }}
               >
-                <TouchableOpacity
-                  onPress={() => {
-                    setShowModal(false);
-                    setEditId(null);
-                    setCategory("");
-                    setDescription("");
-                    setPromotionName("");
-                    setExpiration("");
-                  }}
-                  style={[
-                    styles.primaryAction,
-                    { flex: 1, paddingVertical: 10 },
-                  ]}
+                <ScrollView
+                  keyboardShouldPersistTaps="handled"
+                  keyboardDismissMode="interactive"
+                  contentContainerStyle={{ padding: 16, paddingBottom: 16 }}
+                  showsVerticalScrollIndicator={false}
                 >
-                  <Text style={styles.primaryActionText}>Cancel</Text>
-                </TouchableOpacity>
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: "700",
+                      marginBottom: 15,
+                      color: "#790808",
+                    }}
+                  >
+                    {editId ? "Edit Promotion" : "Add Promotion"}
+                  </Text>
 
-                <TouchableOpacity
-                  onPress={save}
-                  style={{
-                    flex: 1,
-                    paddingVertical: 10,
-                    borderRadius: 10,
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    backgroundColor: "#006900ff",
-                    shadowColor: "#000",
-                    shadowOpacity: 0.15,
-                    shadowRadius: 10,
-                    shadowOffset: { width: 0, height: 4 },
-                    elevation: 5,
-                  }}
-                >
-                  <Text style={styles.primaryActionText}>Save</Text>
-                </TouchableOpacity>
+                  <TextInput
+                    placeholder="Category * (e.g., Hair)"
+                    value={category}
+                    onChangeText={setCategory}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: "#ccc",
+                      borderRadius: 8,
+                      padding: 10,
+                      marginBottom: 12,
+                    }}
+                    placeholderTextColor="#616161"
+                  />
+
+                  <TextInput
+                    placeholder="Promotion Name * (e.g., 25% February Off)"
+                    value={promotionName}
+                    onChangeText={setPromotionName}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: "#ccc",
+                      borderRadius: 8,
+                      padding: 10,
+                      marginBottom: 12,
+                    }}
+                    placeholderTextColor="#616161"
+                  />
+
+                  <TextInput
+                    placeholder="Description *"
+                    value={description}
+                    onChangeText={setDescription}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: "#ccc",
+                      borderRadius: 8,
+                      padding: 10,
+                      marginBottom: 12,
+                      minHeight: 120,
+                      textAlignVertical: "top",
+                    }}
+                    multiline
+                    placeholderTextColor="#616161"
+                  />
+
+                  <TouchableOpacity
+                    style={styles.inputCont}
+                    onPress={() => setShowDatePicker(true)}
+                  >
+                    <Text
+                      style={[
+                        styles.inputField,
+                        { color: expiration ? "#000" : "#999" },
+                      ]}
+                    >
+                      {!expiration
+                        ? "Select Expiration *"
+                        : formatDate(expiration)}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={expiration ? new Date(expiration) : new Date()}
+                      mode="date"
+                      display="default"
+                      minimumDate={new Date()}
+                      onChange={onDateChange}
+                    />
+                  )}
+
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "flex-end",
+                      gap: 12,
+                      marginTop: 10,
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => {
+                        setShowModal(false);
+                        setEditId(null);
+                        setCategory("");
+                        setDescription("");
+                        setPromotionName("");
+                        setExpiration("");
+                      }}
+                      style={[
+                        styles.primaryAction,
+                        { flex: 1, paddingVertical: 10 },
+                      ]}
+                    >
+                      <Text style={styles.primaryActionText}>Cancel</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={save}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 10,
+                        flexDirection: "row",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        backgroundColor: "#006900ff",
+                        shadowColor: "#000",
+                        shadowOpacity: 0.15,
+                        shadowRadius: 10,
+                        shadowOffset: { width: 0, height: 4 },
+                        elevation: 5,
+                      }}
+                    >
+                      <Text style={styles.primaryActionText}>Save</Text>
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
               </View>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </Modal>
 
         {popup && <Popup message={popup} onClose={() => setPopup("")} />}

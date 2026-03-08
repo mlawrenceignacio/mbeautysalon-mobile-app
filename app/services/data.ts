@@ -47,7 +47,25 @@ export const updateReservationStatus = async (
 };
 
 export const sendReservationConfirmation = async (id: string) => {
-  return api.post(`/reservations/${id}/send-confirmation`);
+  try {
+    const res = await api.post(
+      `/reservations/${id}/send-confirmation`,
+      {},
+      {
+        timeout: 120000,
+      },
+    );
+
+    return res.data;
+  } catch (err: any) {
+    console.error("sendReservationConfirmation service error:", {
+      message: err?.message,
+      status: err?.response?.status,
+      data: err?.response?.data,
+    });
+
+    throw err;
+  }
 };
 
 // FAQs

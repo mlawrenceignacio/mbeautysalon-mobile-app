@@ -4,16 +4,12 @@ import { useAuthStore } from "../store/auth.store";
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const API_KEY = process.env.EXPO_PUBLIC_API_KEY;
 
-if (!API_URL) {
-  throw new Error("Missing EXPO_PUBLIC_API_URL");
-}
-
 const api = axios.create({
-  baseURL: API_URL,
-  timeout: 10000,
+  baseURL: API_URL || "",
+  timeout: 60000,
   headers: {
     "Content-Type": "application/json",
-    "x-api-key": API_KEY,
+    ...(API_KEY ? { "x-api-key": API_KEY } : {}),
   },
 });
 
@@ -26,5 +22,7 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+export const hasApiConfig = !!API_URL;
 
 export default api;

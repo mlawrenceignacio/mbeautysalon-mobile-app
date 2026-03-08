@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -21,9 +22,9 @@ import { styles } from "./styles/styles";
 const SignupScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { signup, loading } = useAuthStore();
-
   const [showPassword, setShowPassword] = useState(false);
+
+  const { signup, loading } = useAuthStore();
 
   const handleSignup = async () => {
     if (!email || !password) {
@@ -38,12 +39,14 @@ const SignupScreen = () => {
     if (!emailRegex.test(email.trim())) {
       return Alert.alert(
         "Invalid Email",
-        "Please enter a valid emaill address.",
+        "Please enter a valid email address.",
       );
-    } else if (password.length < 8) {
+    }
+
+    if (password.length < 8) {
       return Alert.alert(
         "Invalid Password",
-        "Password shouldat be at least 8 characters.",
+        "Password should be at least 8 characters.",
       );
     }
 
@@ -51,7 +54,7 @@ const SignupScreen = () => {
 
     if (!ok) {
       const { error } = useAuthStore.getState();
-      Alert.alert("Login Failed", error ?? "Something went wrong.");
+      Alert.alert("Signup Failed", error ?? "Something went wrong.");
       return;
     }
 
@@ -63,13 +66,23 @@ const SignupScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.authCont}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={["top"]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
+        keyboardVerticalOffset={Platform.OS === "android" ? 20 : 0}
       >
-        <View style={{ flex: 1, justifyContent: "center" }}>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            paddingHorizontal: 20,
+            paddingTop: 24,
+            paddingBottom: 40,
+          }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           <Text
             style={{
               fontSize: 25,
@@ -92,8 +105,9 @@ const SignupScreen = () => {
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
-              style={styles.inputField}
-              placeholderTextColor={"#616161ff"}
+              style={[styles.inputField, { flex: 1 }]}
+              placeholderTextColor="#616161"
+              returnKeyType="next"
             />
           </View>
 
@@ -107,18 +121,20 @@ const SignupScreen = () => {
               value={password}
               onChangeText={setPassword}
               autoCapitalize="none"
-              style={styles.inputField}
-              placeholderTextColor={"#616161ff"}
+              style={[styles.inputField, { flex: 1 }]}
+              placeholderTextColor="#616161"
               secureTextEntry={!showPassword}
+              returnKeyType="done"
+              onSubmitEditing={handleSignup}
             />
             <Pressable
               onPress={() => setShowPassword((prev) => !prev)}
-              style={{ paddingRight: 50 }}
+              style={{ paddingHorizontal: 0 }}
             >
               <Ionicons
                 name={showPassword ? "eye-off" : "eye"}
                 size={18}
-                color={"#790808"}
+                color="#790808"
               />
             </Pressable>
           </View>
@@ -150,7 +166,7 @@ const SignupScreen = () => {
               </Link>
             </Text>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "MbeautyQueen",
+    "name": "MBeautySalon",
     "slug": "mbeautyqueen",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -20,7 +20,12 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.mlawrenceignacio.mbeautyqueen"
+      "package": "com.mlawrenceignacio.mbeautyqueen",
+      "androidStatusBar": {
+        "backgroundColor": "#ffffff",
+        "barStyle": "dark-content",
+        "translucent": false
+      }
     },
     "web": {
       "output": "static",
@@ -43,8 +48,7 @@
       "expo-secure-store"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     },
     "extra": {
       "router": {},

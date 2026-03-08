@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -23,7 +24,6 @@ const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login, loading } = useAuthStore();
-
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
@@ -33,7 +33,6 @@ const LoginScreen = () => {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     if (!emailRegex.test(email.trim())) {
       Alert.alert("Invalid Email", "Please enter a valid email address.");
       return;
@@ -64,13 +63,23 @@ const LoginScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.authCont}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }} edges={["top"]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
+        keyboardVerticalOffset={Platform.OS === "android" ? 20 : 0}
       >
-        <View style={{ flex: 1, justifyContent: "center" }}>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            paddingHorizontal: 20,
+            paddingTop: 24,
+            paddingBottom: 40,
+          }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           <Logo />
 
           <View style={styles.inputCont}>
@@ -84,8 +93,9 @@ const LoginScreen = () => {
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
-              style={styles.inputField}
-              placeholderTextColor={"#616161ff"}
+              style={[styles.inputField, { flex: 1 }]}
+              placeholderTextColor="#616161"
+              returnKeyType="next"
             />
           </View>
 
@@ -99,18 +109,20 @@ const LoginScreen = () => {
               value={password}
               onChangeText={setPassword}
               autoCapitalize="none"
-              style={styles.inputField}
-              placeholderTextColor={"#616161ff"}
+              style={[styles.inputField, { flex: 1 }]}
+              placeholderTextColor="#616161"
               secureTextEntry={!showPassword}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
             />
             <Pressable
               onPress={() => setShowPassword((prev) => !prev)}
-              style={{ paddingRight: 50 }}
+              style={{ paddingHorizontal: 0 }}
             >
               <Ionicons
                 name={showPassword ? "eye-off" : "eye"}
                 size={18}
-                color={"#790808"}
+                color="#790808"
               />
             </Pressable>
           </View>
@@ -137,12 +149,12 @@ const LoginScreen = () => {
           <View style={{ marginTop: 24, alignItems: "center" }}>
             <Text>
               Don{"'"}t have an account?{" "}
-              <Link href={"/signup"} style={{ color: "#2b6cb0" }}>
+              <Link href="/signup" style={{ color: "#2b6cb0" }}>
                 Sign up.
               </Link>
             </Text>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

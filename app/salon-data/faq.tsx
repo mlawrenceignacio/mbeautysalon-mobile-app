@@ -1,13 +1,16 @@
 import React, { useCallback, useRef, useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Loading from "../components/Loading";
 import DeleteModal from "../components/Modal";
 import Popup from "../components/Popup";
@@ -32,6 +35,7 @@ const Faq = () => {
   const [answer, setAnswer] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
 
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView | null>(null);
@@ -46,7 +50,7 @@ const Faq = () => {
     useCallback(() => {
       load();
       return () => {};
-    }, [])
+    }, []),
   );
 
   async function load() {
@@ -263,86 +267,111 @@ const Faq = () => {
           </View>
         ))}
 
-        <Modal visible={showModal} transparent animationType="slide">
-          <View
+        <Modal
+          visible={showModal}
+          transparent
+          animationType="slide"
+          statusBarTranslucent
+          onRequestClose={() => setShowModal(false)}
+        >
+          <KeyboardAvoidingView
             style={{
               flex: 1,
-              backgroundColor: "rgba(0,0,0,0.5)",
-              justifyContent: "center",
-              padding: 20,
+              backgroundColor: "rgba(0,0,0,0.45)",
             }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 4 : 0}
           >
             <View
               style={{
-                backgroundColor: "#fff",
-                padding: 20,
-                borderRadius: 12,
-                gap: 10,
+                flex: 1,
+                paddingHorizontal: 8,
+                paddingTop: 8,
+                paddingBottom: Math.max(insets.bottom, 8),
+                justifyContent: "center",
               }}
             >
-              <Text
+              <View
                 style={{
-                  fontSize: 20,
-                  fontWeight: "700",
-                  marginBottom: 15,
-                  color: "#790808",
+                  backgroundColor: "#fff",
+                  borderRadius: 16,
+                  overflow: "hidden",
                 }}
               >
-                {editId ? "Update FAQ" : "Add FAQ"}
-              </Text>
-
-              <TextInput
-                placeholder="Question"
-                value={question}
-                onChangeText={setQuestion}
-                style={[styles.inputField, { borderWidth: 1 }]}
-                placeholderTextColor={"#616161ff"}
-              />
-
-              <TextInput
-                placeholder="Answer"
-                value={answer}
-                onChangeText={setAnswer}
-                style={[
-                  styles.inputField,
-                  {
-                    borderWidth: 1,
-                    borderColor: "black",
-                    maxHeight: 150,
-                    minHeight: 20,
-                  },
-                ]}
-                multiline
-                placeholderTextColor={"#616161ff"}
-              />
-
-              <View style={{ flexDirection: "row", marginTop: 20 }}>
-                <TouchableOpacity
-                  style={[
-                    styles.primaryAction,
-                    { flex: 1, marginRight: 10, paddingVertical: 12 },
-                  ]}
-                  onPress={save}
+                <ScrollView
+                  keyboardShouldPersistTaps="handled"
+                  keyboardDismissMode="interactive"
+                  contentContainerStyle={{ padding: 16, paddingBottom: 16 }}
+                  showsVerticalScrollIndicator={false}
                 >
-                  <Text style={styles.primaryActionText}>Save</Text>
-                </TouchableOpacity>
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: "700",
+                      marginBottom: 15,
+                      color: "#790808",
+                    }}
+                  >
+                    {editId ? "Update FAQ" : "Add FAQ"}
+                  </Text>
 
-                <TouchableOpacity
-                  style={[
-                    styles.primaryAction,
-                    {
-                      flex: 1,
-                      backgroundColor: "#383838ff",
-                      paddingVertical: 12,
-                    },
-                  ]}
-                  onPress={() => setShowModal(false)}
-                >
-                  <Text style={styles.primaryActionText}>Cancel</Text>
-                </TouchableOpacity>
+                  <TextInput
+                    placeholder="Question"
+                    value={question}
+                    onChangeText={setQuestion}
+                    style={[
+                      styles.inputField,
+                      { borderWidth: 1, marginBottom: 10 },
+                    ]}
+                    placeholderTextColor="#616161"
+                  />
+
+                  <TextInput
+                    placeholder="Answer"
+                    value={answer}
+                    onChangeText={setAnswer}
+                    style={[
+                      styles.inputField,
+                      {
+                        borderWidth: 1,
+                        borderColor: "black",
+                        minHeight: 120,
+                        textAlignVertical: "top",
+                      },
+                    ]}
+                    multiline
+                    placeholderTextColor="#616161"
+                  />
+
+                  <View style={{ flexDirection: "row", marginTop: 20 }}>
+                    <TouchableOpacity
+                      style={[
+                        styles.primaryAction,
+                        { flex: 1, marginRight: 10, paddingVertical: 12 },
+                      ]}
+                      onPress={save}
+                    >
+                      <Text style={styles.primaryActionText}>Save</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.primaryAction,
+                        {
+                          flex: 1,
+                          backgroundColor: "#383838ff",
+                          paddingVertical: 12,
+                        },
+                      ]}
+                      onPress={() => setShowModal(false)}
+                    >
+                      <Text style={styles.primaryActionText}>Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
               </View>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </Modal>
 
         {popupMessage && (

@@ -3,13 +3,16 @@ import { useFocusEffect } from "expo-router";
 import React, { useCallback, useRef, useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   addAdminActivity,
   addService,
@@ -35,6 +38,7 @@ const Services = () => {
   const categories = ["All", ...new Set(services.map((s) => s.category))];
   const sortedServices = applySorting(services);
   const [popupMessage, setPopupMessage] = useState("");
+  const insets = useSafeAreaInsets();
 
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -51,7 +55,7 @@ const Services = () => {
     useCallback(() => {
       load();
       return () => {};
-    }, [])
+    }, []),
   );
 
   async function load() {
@@ -76,7 +80,7 @@ const Services = () => {
     if (selectedCategory === "All") return list;
 
     return list.filter(
-      (s: any) => s.category.toLowerCase() === selectedCategory.toLowerCase()
+      (s: any) => s.category.toLowerCase() === selectedCategory.toLowerCase(),
     );
   }
 
@@ -328,101 +332,124 @@ const Services = () => {
           </View>
         ))}
 
-        <Modal visible={showModal} transparent animationType="slide">
-          <View
+        <Modal
+          visible={showModal}
+          transparent
+          animationType="slide"
+          statusBarTranslucent
+          onRequestClose={() => setShowModal(false)}
+        >
+          <KeyboardAvoidingView
             style={{
               flex: 1,
-              backgroundColor: "#00000088",
-              justifyContent: "center",
-              padding: 25,
+              backgroundColor: "rgba(0,0,0,0.45)",
             }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 4 : 0}
           >
             <View
               style={{
-                backgroundColor: "white",
-                padding: 20,
-                borderRadius: 10,
+                flex: 1,
+                justifyContent: "center",
+                paddingHorizontal: 8,
+                paddingTop: 8,
+                paddingBottom: Math.max(insets.bottom, 8),
               }}
             >
-              <Text
-                style={{
-                  fontSize: 20,
-                  fontWeight: "700",
-                  marginBottom: 15,
-                  color: "#790808",
-                }}
-              >
-                {editId ? "Edit Service" : "Add Service"}
-              </Text>
-
-              <TextInput
-                placeholder="Category (e.g., Hair)"
-                value={category}
-                onChangeText={setCategory}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  borderRadius: 8,
-                  padding: 10,
-                  marginBottom: 12,
-                }}
-                placeholderTextColor={"#616161ff"}
-              />
-
-              <TextInput
-                placeholder="Service Name (e.g., Rebond)"
-                value={serviceName}
-                onChangeText={setServiceName}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  borderRadius: 8,
-                  padding: 10,
-                  marginBottom: 12,
-                }}
-                placeholderTextColor={"#616161ff"}
-              />
-
               <View
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "flex-end",
-                  gap: 12,
-                  marginTop: 10,
+                  backgroundColor: "#fff",
+                  borderRadius: 16,
+                  overflow: "hidden",
                 }}
               >
-                <TouchableOpacity
-                  onPress={() => setShowModal(false)}
-                  style={[
-                    styles.primaryAction,
-                    { flex: 1, paddingVertical: 10 },
-                  ]}
+                <ScrollView
+                  keyboardShouldPersistTaps="handled"
+                  keyboardDismissMode="interactive"
+                  contentContainerStyle={{ padding: 16, paddingBottom: 10 }}
+                  showsVerticalScrollIndicator={false}
                 >
-                  <Text style={styles.primaryActionText}>Cancel</Text>
-                </TouchableOpacity>
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: "700",
+                      marginBottom: 15,
+                      color: "#790808",
+                    }}
+                  >
+                    {editId ? "Edit Service" : "Add Service"}
+                  </Text>
 
-                <TouchableOpacity
-                  onPress={save}
-                  style={{
-                    flex: 1,
-                    paddingVertical: 10,
-                    borderRadius: 10,
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    backgroundColor: "#006900ff",
-                    shadowColor: "#000",
-                    shadowOpacity: 0.15,
-                    shadowRadius: 10,
-                    shadowOffset: { width: 0, height: 4 },
-                    elevation: 5,
-                  }}
-                >
-                  <Text style={styles.primaryActionText}>Save</Text>
-                </TouchableOpacity>
+                  <TextInput
+                    placeholder="Category (e.g. Hair)"
+                    value={category}
+                    onChangeText={setCategory}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: "#ccc",
+                      borderRadius: 8,
+                      padding: 10,
+                      marginBottom: 12,
+                    }}
+                    placeholderTextColor="#616161"
+                  />
+
+                  <TextInput
+                    placeholder="Service Name (e.g. Rebond)"
+                    value={serviceName}
+                    onChangeText={setServiceName}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: "#ccc",
+                      borderRadius: 8,
+                      padding: 10,
+                      marginBottom: 12,
+                    }}
+                    placeholderTextColor="#616161"
+                  />
+
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "flex-end",
+                      gap: 12,
+                      marginTop: 10,
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => setShowModal(false)}
+                      style={[
+                        styles.primaryAction,
+                        { flex: 1, paddingVertical: 10 },
+                      ]}
+                    >
+                      <Text style={styles.primaryActionText}>Cancel</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={save}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 10,
+                        flexDirection: "row",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        backgroundColor: "#006900ff",
+                        shadowColor: "#000",
+                        shadowOpacity: 0.15,
+                        shadowRadius: 10,
+                        shadowOffset: { width: 0, height: 4 },
+                        elevation: 5,
+                      }}
+                    >
+                      <Text style={styles.primaryActionText}>Save</Text>
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
               </View>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </Modal>
 
         {popupMessage && (
