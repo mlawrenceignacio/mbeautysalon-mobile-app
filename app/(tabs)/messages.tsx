@@ -15,11 +15,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Popup from "../components/Popup";
 
 import api from "../services/api";
 import socket from "../services/socket";
 import { useAuthStore } from "../store/auth.store";
 
+import Loading from "../components/Loading";
 import ChatListItem from "../components/messages/ChatListItem";
 import CreateMessageModal from "../components/messages/CreateMessageModal";
 
@@ -68,6 +70,8 @@ export default function Messages() {
 
   const activeChatUserIdRef = useRef<string | null>(null);
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [popup, setPopup] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
   const [initialMessage, setInitialMessage] = useState("");
@@ -91,7 +95,7 @@ export default function Messages() {
 
   const loadChatUsers = useCallback(async () => {
     if (!user || user.role !== "admin") return;
-
+    setIsLoading(true);
     try {
       socket.emit("joinAdmins");
 
@@ -128,6 +132,7 @@ export default function Messages() {
 
       setUsers(sortByLast(enriched));
     } finally {
+      setIsLoading(false);
     }
   }, [user]);
 
@@ -149,6 +154,10 @@ export default function Messages() {
 
   useEffect(() => {
     if (!user || user.role !== "admin") return;
+
+    const handleConnect = () => {
+      socket.emit("joinAdmins");
+    };
 
     const onNewMessage = async (msg: any) => {
       setUsers((prev) => {
@@ -188,8 +197,17 @@ export default function Messages() {
       });
     };
 
+    socket.on("connect", handleConnect);
     socket.on("newMessage", onNewMessage);
+
+    socket.connect();
+
+    if (socket.connected) {
+      socket.emit("joinAdmins");
+    }
+
     return () => {
+      socket.off("connect", handleConnect);
       socket.off("newMessage", onNewMessage);
     };
   }, [user, webUserById]);
@@ -223,14 +241,22 @@ export default function Messages() {
   const createMessage = async () => {
     const email = recipientEmail.trim().toLowerCase();
     const msg = initialMessage.trim();
-    if (!email || !msg) return;
+    if (!email || !msg) {
+      setPopup("All fields are required.");
+      return;
+    }
 
     const recipient = webUsers.find((u) => u.email?.toLowerCase() === email);
-    if (!recipient?._id) return;
+    if (!recipient?._id) {
+      setPopup("Web user not found.");
+      return;
+    }
 
     const now = new Date().toISOString();
+
     setUsers((prev) => {
       const exists = prev.some((u) => u._id === recipient._id);
+
       const row: ChatUser = {
         _id: recipient._id,
         name: recipient.username || recipient.name || recipient.email,
@@ -239,6 +265,7 @@ export default function Messages() {
         lastMessageTime: now,
         unreadCount: 0,
       };
+
       return sortByLast(
         exists
           ? prev.map((u) => (u._id === row._id ? row : u))
@@ -252,6 +279,8 @@ export default function Messages() {
       setCreateOpen(false);
 
       openChat(recipient._id);
+    } catch {
+      setPopup("Something went wrong.");
     } finally {
       setCreating(false);
     }
@@ -259,10 +288,11 @@ export default function Messages() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }}>
+      {popup.trim() && <Popup message={popup} onClose={() => setPopup("")} />}
+
       <View
         style={{
           paddingHorizontal: 14,
-          paddingVertical: 12,
           borderBottomWidth: 1,
           borderBottomColor: border,
           backgroundColor: bg,
@@ -300,13 +330,15 @@ export default function Messages() {
         </View>
       </View>
 
-      {
+      {isLoading ? (
+        <Loading />
+      ) : (
         <FlatList
           data={filteredUsers}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             <ChatListItem
-              title={item.name || item.email}
+              title={item.email}
               subtitle={item.lastMessage || "No messages yet"}
               timeLabel={formatTimeLabel(item.lastMessageTime)}
               unreadCount={item.unreadCount || 0}
@@ -321,7 +353,7 @@ export default function Messages() {
             </View>
           }
         />
-      }
+      )}
 
       <TouchableOpacity
         onPress={openCreateModal}

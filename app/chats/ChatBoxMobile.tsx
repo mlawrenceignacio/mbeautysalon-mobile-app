@@ -32,7 +32,7 @@ const bg = "#FFFFFF";
 const border = "#E5E7EB";
 const textDark = "#111827";
 const textMuted = "#6B7280";
-const HEADER_HEIGHT = 56;
+const HEADER_HEIGHT = 40;
 
 export default function ChatBoxMobile() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
@@ -102,10 +102,14 @@ export default function ChatBoxMobile() {
   }, [userId]);
 
   const data = useMemo(() => {
-    return [...messages].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
+    return [...messages].sort((a, b) => {
+      const timeDiff =
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+
+      if (timeDiff !== 0) return timeDiff;
+
+      return b._id.localeCompare(a._id);
+    });
   }, [messages]);
 
   const sendMessage = async () => {
@@ -162,7 +166,7 @@ export default function ChatBoxMobile() {
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: bg }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? HEADER_HEIGHT : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
       >
         <View
           style={{

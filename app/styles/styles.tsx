@@ -220,7 +220,7 @@ export const styles = StyleSheet.create({
   },
 
   headerCont: {
-    marginTop: 50,
+    marginTop: 10,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",

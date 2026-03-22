@@ -14,7 +14,7 @@ const ActivityHistory = () => {
   const [category, setCategory] = useState("Admin");
   const [allAdminActivities, setAllAdminActivities] = useState<any[]>([]);
   const [currentAdminActivities, setCurrentAdminActivities] = useState<any[]>(
-    []
+    [],
   );
   const [showTopButton, setShowTopButton] = useState(false);
 
@@ -55,7 +55,7 @@ const ActivityHistory = () => {
     useCallback(() => {
       load();
       return () => {};
-    }, [])
+    }, []),
   );
 
   if (isLoading) return <Loading />;
@@ -78,7 +78,7 @@ const ActivityHistory = () => {
       >
         <View
           style={{
-            marginTop: 50,
+            marginTop: 10,
             flexDirection: "row",
             justifyContent: "center",
             alignItems: "flex-start",

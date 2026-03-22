@@ -46,28 +46,6 @@ export const updateReservationStatus = async (
     .then((res) => res.data);
 };
 
-export const sendReservationConfirmation = async (id: string) => {
-  try {
-    const res = await api.post(
-      `/reservations/${id}/send-confirmation`,
-      {},
-      {
-        timeout: 120000,
-      },
-    );
-
-    return res.data;
-  } catch (err: any) {
-    console.error("sendReservationConfirmation service error:", {
-      message: err?.message,
-      status: err?.response?.status,
-      data: err?.response?.data,
-    });
-
-    throw err;
-  }
-};
-
 // FAQs
 export const getFAQs = async () => {
   return api.get("/faq").then((res) => res.data);

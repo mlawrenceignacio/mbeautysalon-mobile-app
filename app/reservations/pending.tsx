@@ -8,7 +8,6 @@ import Popup from "../components/Popup";
 import {
   addAdminActivity,
   getReservations,
-  sendReservationConfirmation,
   updateReservationStatusWithReason,
 } from "../services/data";
 import { useAuthStore } from "../store/auth.store";
@@ -108,7 +107,7 @@ const PendingReservations = () => {
               style={[styles.cardNoteText, { flex: 1, paddingHorizontal: 5 }]}
             >
               Pending reservation requests are seen here. These are not
-              confirmed by the web user yet. Send confirmation.
+              confirmed by the web user yet.
             </Text>
           </View>
 
@@ -230,71 +229,6 @@ const PendingReservations = () => {
                 width: "100%",
               }}
             >
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 5,
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                }}
-              >
-                <TouchableOpacity
-                  style={{
-                    backgroundColor:
-                      r.status === "Pending" ? "#00096a" : "#aaa",
-                    paddingVertical: 6,
-                    paddingHorizontal: 10,
-                    borderRadius: 10,
-                  }}
-                  disabled={r.status !== "Pending"}
-                  onPress={async () => {
-                    setIsLoading(true);
-
-                    try {
-                      if (!adminId) {
-                        setIsLoading(false);
-                        return;
-                      }
-
-                      const res = await sendReservationConfirmation(r._id);
-
-                      await addAdminActivity(adminId, {
-                        adminUsername,
-                        activityName: `Sent a reservation email confirmation to ${r.clientName} (${r.email}) scheduled on ${formatDate(r.date)} at ${r.time}.`,
-                        adminEmail,
-                      });
-
-                      setPopup(res?.message || "Confirmation sent!");
-                      await load();
-                    } catch (err: any) {
-                      console.error(
-                        "Send confirmation failed in pending.tsx:",
-                        {
-                          message: err?.message,
-                          status: err?.response?.status,
-                          data: err?.response?.data,
-                          fullError: err,
-                        },
-                      );
-
-                      const backendMessage =
-                        err?.response?.data?.message ||
-                        err?.response?.data?.error ||
-                        err?.message ||
-                        "Failed to send confirmation.";
-
-                      setPopup(backendMessage);
-                    } finally {
-                      setIsLoading(false);
-                    }
-                  }}
-                >
-                  <Text style={{ color: "white", fontWeight: "700" }}>
-                    Send Confirmation
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
               <View
                 style={{
                   flexDirection: "row",

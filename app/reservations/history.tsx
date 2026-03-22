@@ -18,7 +18,7 @@ const History = () => {
     useCallback(() => {
       load();
       return () => {};
-    }, [])
+    }, []),
   );
 
   async function load() {
@@ -29,7 +29,7 @@ const History = () => {
       if (!result) return;
 
       const filteredReservations = result?.reservations?.filter(
-        (r: any) => r.status === "Done"
+        (r: any) => r.status === "Done",
       );
 
       setDoneReservations(filteredReservations);
@@ -61,7 +61,7 @@ const History = () => {
       >
         <View
           style={{
-            marginTop: 50,
+            marginTop: 10,
             flexDirection: "row",
             justifyContent: "center",
             alignItems: "flex-start",

@@ -22,7 +22,7 @@ const Cancelled = () => {
       if (!result) return;
 
       const filteredReservations = result?.reservations?.filter(
-        (r: any) => r.status === "Cancelled" || r.status === "Declined"
+        (r: any) => r.status === "Cancelled" || r.status === "Declined",
       );
 
       setCancelled(filteredReservations);
@@ -39,7 +39,7 @@ const Cancelled = () => {
       load();
 
       return () => {};
-    }, [])
+    }, []),
   );
 
   if (isLoading) return <Loading />;
@@ -62,7 +62,7 @@ const Cancelled = () => {
       >
         <View
           style={{
-            marginTop: 50,
+            marginTop: 10,
             flexDirection: "row",
             justifyContent: "center",
             alignItems: "flex-start",

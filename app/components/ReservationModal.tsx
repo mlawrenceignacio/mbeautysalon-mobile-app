@@ -119,6 +119,7 @@ export default function ReservationModal({
               backgroundColor: "#fff",
               borderRadius: 16,
               overflow: "hidden",
+              maxHeight: "75%",
             }}
           >
             <ScrollView
